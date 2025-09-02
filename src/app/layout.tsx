@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/ui/Navbar/Navbar";
+import Footer from "@/components/ui/Footer/Footer";
 import Aurora from "@/components/Aurora/Aurora";
 
 const inter = Inter({
@@ -45,6 +46,7 @@ export default function RootLayout({
         <div className="relative z-10">
           <Navbar />
           {children}
+          <Footer />
         </div>
       </body>
     </html>
