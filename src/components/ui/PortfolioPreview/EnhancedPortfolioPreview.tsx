@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,16 +9,7 @@ import {
   Monitor,
   Tablet,
   Maximize2,
-  Home,
-  User,
-  Briefcase,
-  Code,
-  GraduationCap,
-  Award,
-  Heart,
   Mail,
-  Menu,
-  X,
   Github,
   Linkedin,
   Calendar,
@@ -36,26 +27,6 @@ const EnhancedPortfolioPreview: React.FC<PortfolioPreviewProps> = ({
   onPublish,
   onOpenFullWindow,
 }) => {
-  const [activeSection, setActiveSection] = useState("home");
-  const [isNavOpen, setIsNavOpen] = useState(false);
-
-  // Check if we're in a preview context (not fullscreen)
-  const isInPreviewMode = typeof window !== "undefined" && window.location.pathname === "/preview" && !window.location.search.includes("fullscreen=true");
-  
-  // Calculate padding based on context
-  const getContentPadding = () => {
-    // In fullscreen mode, just account for portfolio navbar
-    if (!isInPreviewMode) {
-      return "pt-16";
-    }
-    // In preview mode with mobile/tablet, container handles spacing
-    if (previewMode === "mobile" || previewMode === "tablet") {
-      return "pt-16";
-    }
-    // In preview mode desktop, account for both navbars
-    return "pt-32";
-  };
-
   // Refs for each section
   const homeRef = useRef<HTMLElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
@@ -67,93 +38,14 @@ const EnhancedPortfolioPreview: React.FC<PortfolioPreviewProps> = ({
   const interestsRef = useRef<HTMLElement>(null);
   const contactRef = useRef<HTMLElement>(null);
 
-  const navItems = [
-    { id: "home", label: "Home", icon: Home, ref: homeRef },
-    { id: "about", label: "About", icon: User, ref: aboutRef },
-    { id: "projects", label: "Projects", icon: Code, ref: projectsRef },
-    {
-      id: "experience",
-      label: "Experience",
-      icon: Briefcase,
-      ref: experienceRef,
-    },
-    { id: "skills", label: "Skills", icon: Code, ref: skillsRef },
-    {
-      id: "education",
-      label: "Education",
-      icon: GraduationCap,
-      ref: educationRef,
-    },
-    {
-      id: "achievements",
-      label: "Achievements",
-      icon: Award,
-      ref: achievementsRef,
-    },
-    { id: "interests", label: "Interests", icon: Heart, ref: interestsRef },
-    { id: "contact", label: "Contact", icon: Mail, ref: contactRef },
-  ].filter((item) => {
-    if (item.id === "about") return portfolioData.introduction?.bio;
-    if (item.id === "projects")
-      return portfolioData.projects && portfolioData.projects.length > 0;
-    if (item.id === "experience")
-      return portfolioData.experience && portfolioData.experience.length > 0;
-    if (item.id === "skills")
-      return portfolioData.skills && portfolioData.skills.length > 0;
-    if (item.id === "education")
-      return portfolioData.education && portfolioData.education.length > 0;
-    if (item.id === "achievements")
-      return (
-        portfolioData.achievements && portfolioData.achievements.length > 0
-      );
-    if (item.id === "interests")
-      return portfolioData.interests && portfolioData.interests.length > 0;
-    if (item.id === "contact") return portfolioData.contact;
-    return true;
-  });
-
   const scrollToSection = (
-    ref: React.RefObject<HTMLElement | null>,
-    sectionId: string
+    ref: React.RefObject<HTMLElement | null>
   ) => {
     ref.current?.scrollIntoView({ behavior: "smooth" });
-    setActiveSection(sectionId);
-    setIsNavOpen(false);
   };
 
   // Intersection Observer for active section
-  useEffect(() => {
-    const observers: IntersectionObserver[] = [];
-    const refsToObserve = [
-      homeRef,
-      aboutRef,
-      projectsRef,
-      experienceRef,
-      skillsRef,
-      educationRef,
-      achievementsRef,
-      interestsRef,
-      contactRef,
-    ];
-
-    refsToObserve.forEach((ref) => {
-      if (ref.current) {
-        const observer = new IntersectionObserver(
-          ([entry]) => {
-            if (entry.isIntersecting) {
-              const section = entry.target.getAttribute("data-section");
-              if (section) setActiveSection(section);
-            }
-          },
-          { threshold: 0.5 }
-        );
-        observer.observe(ref.current);
-        observers.push(observer);
-      }
-    });
-
-    return () => observers.forEach((observer) => observer.disconnect());
-  }, []);
+  // Removed since we don't have internal navigation anymore
 
   const getPreviewDimensions = () => {
     switch (previewMode) {
@@ -168,99 +60,8 @@ const EnhancedPortfolioPreview: React.FC<PortfolioPreviewProps> = ({
 
   const PreviewContent = () => (
     <div className="relative min-h-full bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white overflow-hidden">
-      {/* Fixed Navigation */}
-      <motion.nav
-        className="fixed top-0 left-0 right-0 z-40 bg-gray-900/90 backdrop-blur-md border-b border-white/10"
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo/Name */}
-            <motion.div
-              className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"
-              whileHover={{ scale: 1.05 }}
-            >
-              {portfolioData.introduction?.name || "Portfolio"}
-            </motion.div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              {navItems.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <motion.button
-                    key={item.id}
-                    onClick={() => scrollToSection(item.ref, item.id)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
-                      activeSection === item.id
-                        ? "bg-purple-500/20 text-purple-400"
-                        : "text-white/70 hover:text-white hover:bg-white/10"
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsNavOpen(!isNavOpen)}
-              className="md:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
-            >
-              {isNavOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-
-          {/* Mobile Navigation */}
-          <AnimatePresence>
-            {isNavOpen && (
-              <motion.div
-                className="md:hidden border-t border-white/10"
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="py-4 space-y-2">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => scrollToSection(item.ref, item.id)}
-                        className={`flex items-center space-x-3 w-full px-4 py-3 rounded-lg transition-all ${
-                          activeSection === item.id
-                            ? "bg-purple-500/20 text-purple-400"
-                            : "text-white/70 hover:text-white hover:bg-white/10"
-                        }`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span>{item.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </motion.nav>
-
-      {/* Main Content with dynamic padding for navbar */}
-      <div className={getContentPadding()}>
+      {/* Main Content without navbar padding */}
+      <div>
         {/* Hero Section */}
         <section
           ref={homeRef}
@@ -396,7 +197,7 @@ const EnhancedPortfolioPreview: React.FC<PortfolioPreviewProps> = ({
                 </motion.a>
               )}
               <motion.button
-                onClick={() => scrollToSection(projectsRef, "projects")}
+                onClick={() => scrollToSection(projectsRef)}
                 className="px-8 py-3 border border-white/20 rounded-full text-white font-semibold hover:bg-white/10 transition-all duration-300"
                 whileHover={{
                   scale: 1.05,

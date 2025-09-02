@@ -65,7 +65,7 @@ const DashboardPage = () => {
       // Save to localStorage
       localStorage.setItem("portfolioData", JSON.stringify(portfolioData));
       // TODO: Also save to database/API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API call
     } catch (error) {
       console.error("Error saving portfolio:", error);
     } finally {
@@ -206,16 +206,18 @@ const DashboardPage = () => {
   );
 
   const handleProjectsChange = useCallback(
-    (newData: { projects: Array<{
-      name: string;
-      description: string;
-      technologies: string[];
-      id?: string;
-      image?: string;
-      link?: string;
-      startDate?: string;
-      endDate?: string;
-    }> }) => {
+    (newData: {
+      projects: Array<{
+        name: string;
+        description: string;
+        technologies: string[];
+        id?: string;
+        image?: string;
+        link?: string;
+        startDate?: string;
+        endDate?: string;
+      }>;
+    }) => {
       // Extract projects array from the form data structure
       const projectsData = newData?.projects || [];
       handleSectionDataChange("projects", projectsData);
@@ -459,7 +461,7 @@ const DashboardPage = () => {
         {/* Main Content Area - Now takes full remaining space */}
         <div className="flex-1 overflow-y-auto bg-gray-900/50 relative">
           {renderActiveSection()}
-          
+
           {/* Floating Preview Button */}
           <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-3">
             <Button
@@ -470,7 +472,7 @@ const DashboardPage = () => {
               <Eye className="w-4 h-4 mr-2" />
               Quick Preview
             </Button>
-            
+
             <Button
               variant="primary"
               onClick={handlePreview}

@@ -145,14 +145,78 @@ const PreviewPage = () => {
   // If in fullscreen mode or no session, show just the portfolio
   if (isFullscreen || !session) {
     return (
-      <div className="w-full h-screen bg-gray-900 overflow-auto">
-        <EnhancedPortfolioPreview
-          portfolioData={portfolioData}
-          previewMode={previewMode}
-          onPreviewModeChange={setPreviewMode}
-          onPublish={handlePublish}
-          onOpenFullWindow={handleOpenFullWindow}
-        />
+      <div className="w-full h-screen bg-gray-900 overflow-auto relative">
+        {/* Portfolio Navigation Bar */}
+        <div className="absolute top-0 left-0 right-0 z-40 bg-gray-900/90 backdrop-blur-md border-b border-white/10">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo/Name */}
+              <div className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                {portfolioData.introduction?.name || "Portfolio"}
+              </div>
+
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-8">
+                <button 
+                  onClick={() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                >
+                  <span className="text-sm font-medium">Home</span>
+                </button>
+                {portfolioData.introduction?.bio && (
+                  <button 
+                    onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    <span className="text-sm font-medium">About</span>
+                  </button>
+                )}
+                {portfolioData.projects && portfolioData.projects.length > 0 && (
+                  <button 
+                    onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    <span className="text-sm font-medium">Projects</span>
+                  </button>
+                )}
+                {portfolioData.experience && portfolioData.experience.length > 0 && (
+                  <button 
+                    onClick={() => document.getElementById('experience')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    <span className="text-sm font-medium">Experience</span>
+                  </button>
+                )}
+                {portfolioData.contact && (
+                  <button 
+                    onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                  >
+                    <span className="text-sm font-medium">Contact</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button className="md:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Portfolio Content with top padding for navbar */}
+        <div className="pt-16 h-full">
+          <EnhancedPortfolioPreview
+            portfolioData={portfolioData}
+            previewMode={previewMode}
+            onPreviewModeChange={setPreviewMode}
+            onPublish={handlePublish}
+            onOpenFullWindow={handleOpenFullWindow}
+          />
+        </div>
       </div>
     );
   }
@@ -261,13 +325,80 @@ const PreviewPage = () => {
       {/* Full-Screen Portfolio Preview with Responsive Container */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className={getPreviewContainerStyles()}>
-          <EnhancedPortfolioPreview
-            portfolioData={portfolioData}
-            previewMode={previewMode}
-            onPreviewModeChange={setPreviewMode}
-            onPublish={handlePublish}
-            onOpenFullWindow={handleOpenFullWindow}
-          />
+          {/* Add navbar inside the preview */}
+          <div className="relative h-full">
+            {/* Portfolio Navigation Bar */}
+            <div className="absolute top-0 left-0 right-0 z-40 bg-gray-900/90 backdrop-blur-md border-b border-white/10">
+              <div className="max-w-6xl mx-auto px-4">
+                <div className="flex items-center justify-between h-16">
+                  {/* Logo/Name */}
+                  <div className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    {portfolioData.introduction?.name || "Portfolio"}
+                  </div>
+
+                  {/* Desktop Navigation */}
+                  <div className="hidden md:flex items-center space-x-8">
+                    <button 
+                      onClick={() => document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                    >
+                      <span className="text-sm font-medium">Home</span>
+                    </button>
+                    {portfolioData.introduction?.bio && (
+                      <button 
+                        onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                      >
+                        <span className="text-sm font-medium">About</span>
+                      </button>
+                    )}
+                    {portfolioData.projects && portfolioData.projects.length > 0 && (
+                      <button 
+                        onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                      >
+                        <span className="text-sm font-medium">Projects</span>
+                      </button>
+                    )}
+                    {portfolioData.experience && portfolioData.experience.length > 0 && (
+                      <button 
+                        onClick={() => document.getElementById('experience')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                      >
+                        <span className="text-sm font-medium">Experience</span>
+                      </button>
+                    )}
+                    {portfolioData.contact && (
+                      <button 
+                        onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="flex items-center space-x-2 px-4 py-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                      >
+                        <span className="text-sm font-medium">Contact</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Mobile Menu Button */}
+                  <button className="md:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Portfolio Content with top padding for navbar */}
+            <div className="pt-16 h-full overflow-auto">
+              <EnhancedPortfolioPreview
+                portfolioData={portfolioData}
+                previewMode={previewMode}
+                onPreviewModeChange={setPreviewMode}
+                onPublish={handlePublish}
+                onOpenFullWindow={handleOpenFullWindow}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
