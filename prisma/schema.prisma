@@ -1,0 +1,91 @@
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SectionType {
+  HERO
+  PROJECTS
+  CONTACT
+  CUSTOM
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String?
+  name         String?
+  portfolio    Portfolio?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Portfolio {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id])
+  handle    String    @unique
+  title     String
+  subtitle  String?
+  avatarUrl String?
+  published Boolean   @default(false)
+  theme     Theme?
+  sections  Section[]
+  viewCount Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Visit     Visit[]
+}
+
+model Theme {
+  id          String    @id @default(cuid())
+  portfolioId String    @unique
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  font        String?
+  accent      String?
+  mode        String? // "light" | "dark" | "system"
+}
+
+model Section {
+  id          String        @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio     @relation(fields: [portfolioId], references: [id])
+  type        SectionType
+  title       String
+  order       Int
+  content     Json? // for rich text / markdown blocks
+  items       SectionItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([portfolioId, order])
+  @@index([portfolioId, type])
+}
+
+model SectionItem {
+  id          String    @id @default(cuid())
+  sectionId   String
+  section     Section   @relation(fields: [sectionId], references: [id])
+  title       String
+  subtitle    String?
+  description String?
+  link        String?
+  imageUrl    String?
+  startDate   DateTime?
+  endDate     DateTime?
+  tags        String[]
+}
+
+model Visit {
+  id          String    @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  createdAt   DateTime  @default(now())
+  ip          String?
+  userAgent   String?
+}
