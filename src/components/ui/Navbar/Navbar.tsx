@@ -43,13 +43,13 @@ const Navbar = () => {
             {/* Desktop Auth Section */}
             <div className="hidden md:flex items-center space-x-4">
               <Link
-                href="/login"
+                href="/auth"
                 className="text-white/80 hover:text-white transition-colors duration-200"
               >
                 Sign In
               </Link>
               <Link
-                href="/register"
+                href="/auth"
                 className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg"
               >
                 Get Started
@@ -102,14 +102,14 @@ const Navbar = () => {
                 </Link>
                 <div className="border-t border-white/10 pt-3 mt-3">
                   <Link
-                    href="/login"
+                    href="/auth"
                     className="block px-3 py-2 text-white/80 hover:text-white transition-colors duration-200"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Sign In
                   </Link>
                   <Link
-                    href="/register"
+                    href="/auth"
                     className="block px-3 py-2 mt-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 text-center shadow-lg"
                     onClick={() => setIsMenuOpen(false)}
                   >
