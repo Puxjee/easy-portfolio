@@ -1,161 +1,275 @@
 "use client";
 
-import React from "react";
-import { useSearchParams } from "next/navigation";
-import { ExternalLink } from "lucide-react";
-import Card from "@/components/ui/Card/Card";
-import { PortfolioData } from "@/types";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
+import {
+  ArrowLeft,
+  Share,
+  Download,
+  Monitor,
+  Tablet,
+  Smartphone,
+} from "lucide-react";
+import Button from "@/components/ui/Button/Button";
+import EnhancedPortfolioPreview from "@/components/ui/PortfolioPreview/EnhancedPortfolioPreview";
+import type { PortfolioData } from "@/types/portfolio";
 
 const PreviewPage = () => {
+  const { data: session } = useSession();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const dataParam = searchParams.get("data");
+  const isFullscreen = searchParams.get("fullscreen") === "true";
 
-  let portfolioData: PortfolioData = {};
+  const [portfolioData, setPortfolioData] = useState<PortfolioData>({
+    introduction: {
+      name: "",
+      title: "",
+      bio: "",
+      avatar: "",
+      location: "",
+    },
+    projects: [],
+    experience: [],
+    skills: [],
+    education: [],
+    achievements: [],
+    interests: [],
+    contact: {
+      email: "",
+      phone: "",
+      linkedin: "",
+      github: "",
+      website: "",
+    },
+    settings: {
+      theme: "dark",
+      primaryColor: "#8B5CF6",
+      font: "Inter",
+      showContactInfo: true,
+      showSocialLinks: true,
+      enableAnimations: true,
+      isPublic: false,
+      customDomain: "",
+      seoTitle: "",
+      seoDescription: "",
+    },
+  });
+  const [previewMode, setPreviewMode] = useState<
+    "desktop" | "tablet" | "mobile"
+  >("desktop");
+  const [isPublishing, setIsPublishing] = useState(false);
 
-  if (dataParam) {
-    try {
-      portfolioData = JSON.parse(decodeURIComponent(dataParam));
-    } catch (error) {
-      console.error("Failed to parse portfolio data:", error);
+  // Load portfolio data
+  useEffect(() => {
+    // First try URL parameter (for direct links)
+    if (dataParam) {
+      try {
+        const urlData = JSON.parse(decodeURIComponent(dataParam));
+        setPortfolioData(urlData);
+        return;
+      } catch (error) {
+        console.error("Failed to parse URL portfolio data:", error);
+      }
     }
+
+    // Then try localStorage
+    try {
+      const localData = localStorage.getItem("portfolioData");
+      if (localData) {
+        setPortfolioData(JSON.parse(localData));
+      }
+    } catch (error) {
+      console.error("Error loading portfolio data:", error);
+    }
+  }, [dataParam]);
+
+  const handleBackToDashboard = () => {
+    router.push("/dashboard");
+  };
+
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    try {
+      // TODO: Implement actual publish functionality
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
+      console.log("Portfolio published!");
+    } catch (error) {
+      console.error("Error publishing portfolio:", error);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleShare = () => {
+    // TODO: Implement share functionality
+    if (navigator.share) {
+      navigator.share({
+        title: `${portfolioData.introduction?.name}'s Portfolio`,
+        text: portfolioData.introduction?.bio || "Check out my portfolio!",
+        url: window.location.href,
+      });
+    } else {
+      // Fallback: copy URL to clipboard
+      navigator.clipboard.writeText(window.location.href);
+    }
+  };
+
+  const handleDownload = () => {
+    // TODO: Implement download as PDF functionality
+    console.log("Download portfolio as PDF");
+  };
+
+  const handleOpenFullWindow = () => {
+    // Open in new tab/window for true full-screen experience
+    window.open("/preview?fullscreen=true", "_blank");
+  };
+
+  // Get preview container styles based on mode
+  const getPreviewContainerStyles = () => {
+    if (isFullscreen) {
+      return "w-full h-full"; // True fullscreen
+    }
+
+    switch (previewMode) {
+      case "mobile":
+        return "w-[375px] h-[667px] mx-auto bg-white rounded-xl shadow-2xl overflow-hidden";
+      case "tablet":
+        return "w-[768px] h-[1024px] mx-auto bg-white rounded-xl shadow-2xl overflow-hidden";
+      default:
+        return "w-full h-full"; // Desktop is full window
+    }
+  };
+
+  // If in fullscreen mode or no session, show just the portfolio
+  if (isFullscreen || !session) {
+    return (
+      <div className="w-full h-screen bg-gray-900 overflow-auto">
+        <EnhancedPortfolioPreview
+          portfolioData={portfolioData}
+          previewMode={previewMode}
+          onPreviewModeChange={setPreviewMode}
+          onPublish={handlePublish}
+          onOpenFullWindow={handleOpenFullWindow}
+        />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10" />
-        <div className="relative p-8 text-center">
-          {portfolioData.introduction?.avatar && (
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 p-1">
-              <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center">
-                <span className="text-2xl font-bold">
-                  {portfolioData.introduction.name?.charAt(0) || "U"}
-                </span>
+    <div className="min-h-screen bg-gray-900 flex flex-col">
+      {/* Improved Top Navigation Bar - Only show when not in fullscreen */}
+      {!isFullscreen && (
+        <div className="bg-gray-800/95 backdrop-blur-md border-b border-white/10 sticky top-0 z-50 shadow-lg flex-shrink-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              {/* Left side - Back button */}
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="secondary"
+                  onClick={handleBackToDashboard}
+                  className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Editor
+                </Button>
+
+                <div className="h-6 w-px bg-white/20" />
+
+                <div>
+                  <h1 className="text-lg font-semibold text-white">
+                    Portfolio Preview
+                  </h1>
+                  <p className="text-xs text-white/50">
+                    {portfolioData.introduction?.name || "Your Portfolio"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Center - Enhanced Preview mode controls */}
+              <div className="flex items-center space-x-2 bg-white/5 rounded-xl p-1 border border-white/10">
+                <button
+                  onClick={() => setPreviewMode("desktop")}
+                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    previewMode === "desktop"
+                      ? "bg-purple-500 text-white shadow-lg"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <Monitor className="w-4 h-4 mr-2" />
+                  Desktop
+                </button>
+                <button
+                  onClick={() => setPreviewMode("tablet")}
+                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    previewMode === "tablet"
+                      ? "bg-purple-500 text-white shadow-lg"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <Tablet className="w-4 h-4 mr-2" />
+                  Tablet
+                </button>
+                <button
+                  onClick={() => setPreviewMode("mobile")}
+                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    previewMode === "mobile"
+                      ? "bg-purple-500 text-white shadow-lg"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <Smartphone className="w-4 h-4 mr-2" />
+                  Mobile
+                </button>
+              </div>
+
+              {/* Right side - Action buttons */}
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="secondary"
+                  onClick={handleShare}
+                  className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
+                >
+                  <Share className="w-4 h-4 mr-2" />
+                  Share
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  onClick={handleDownload}
+                  className="text-white/70 hover:text-white hover:bg-white/10 transition-all duration-200"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+
+                <Button
+                  variant="primary"
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                  className="bg-purple-600 hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-purple-500/25"
+                >
+                  {isPublishing ? "Publishing..." : "Publish"}
+                </Button>
               </div>
             </div>
-          )}
-          <h1 className="text-3xl font-bold mb-2">
-            {portfolioData.introduction?.name || "Your Name"}
-          </h1>
-          <p className="text-purple-400 mb-4">
-            {portfolioData.introduction?.title || "Your Title"}
-          </p>
-          <p className="text-white/70 max-w-md mx-auto">
-            {portfolioData.introduction?.bio || "Tell us about yourself..."}
-          </p>
+          </div>
+        </div>
+      )}
+
+      {/* Full-Screen Portfolio Preview with Responsive Container */}
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className={getPreviewContainerStyles()}>
+          <EnhancedPortfolioPreview
+            portfolioData={portfolioData}
+            previewMode={previewMode}
+            onPreviewModeChange={setPreviewMode}
+            onPublish={handlePublish}
+            onOpenFullWindow={handleOpenFullWindow}
+          />
         </div>
       </div>
-
-      {/* Projects Section */}
-      {portfolioData.projects && portfolioData.projects.length > 0 && (
-        <div className="p-8">
-          <h2 className="text-2xl font-bold mb-6">Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {portfolioData.projects.map((project) => (
-              <Card key={project.id} variant="glass" className="p-6">
-                <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
-                <p className="text-white/70 mb-4">{project.description}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.technologies?.map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-                {project.link && (
-                  <a
-                    href={project.link}
-                    className="inline-flex items-center text-purple-400 hover:text-purple-300 transition-colors"
-                  >
-                    View Project <ExternalLink className="w-4 h-4 ml-1" />
-                  </a>
-                )}
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Experience Section */}
-      {portfolioData.experience && portfolioData.experience.length > 0 && (
-        <div className="p-8 bg-white/5">
-          <h2 className="text-2xl font-bold mb-6">Experience</h2>
-          <div className="space-y-6">
-            {portfolioData.experience.map((exp) => (
-              <div key={exp.id} className="border-l-2 border-purple-500 pl-4">
-                <h3 className="text-xl font-semibold">{exp.position}</h3>
-                <p className="text-purple-400 mb-2">
-                  {exp.company} • {exp.duration}
-                </p>
-                <p className="text-white/70">{exp.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Skills Section */}
-      {portfolioData.skills && portfolioData.skills.length > 0 && (
-        <div className="p-8">
-          <h2 className="text-2xl font-bold mb-6">Skills</h2>
-          <div className="flex flex-wrap gap-3">
-            {portfolioData.skills.map((skill) => (
-              <span
-                key={skill}
-                className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg text-white"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Contact Section */}
-      {portfolioData.contact && (
-        <div className="p-8 bg-white/5">
-          <h2 className="text-2xl font-bold mb-6">Contact</h2>
-          <div className="space-y-2">
-            {portfolioData.contact.email && (
-              <p>
-                Email:{" "}
-                <a
-                  href={`mailto:${portfolioData.contact.email}`}
-                  className="text-purple-400"
-                >
-                  {portfolioData.contact.email}
-                </a>
-              </p>
-            )}
-            {portfolioData.contact.github && (
-              <p>
-                GitHub:{" "}
-                <a
-                  href={portfolioData.contact.github}
-                  className="text-purple-400"
-                >
-                  {portfolioData.contact.github}
-                </a>
-              </p>
-            )}
-            {portfolioData.contact.linkedin && (
-              <p>
-                LinkedIn:{" "}
-                <a
-                  href={portfolioData.contact.linkedin}
-                  className="text-purple-400"
-                >
-                  {portfolioData.contact.linkedin}
-                </a>
-              </p>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

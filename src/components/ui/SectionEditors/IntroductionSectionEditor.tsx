@@ -33,9 +33,14 @@ const IntroductionSectionEditor: React.FC<IntroductionSectionProps> = ({
 
   // Watch all fields to trigger live updates
   const watchedValues = watch();
+
+  // Debounce the onChange call to prevent infinite loops
   React.useEffect(() => {
-    // Always propagate changes to parent for live preview, even if form has validation errors
-    onChange(watchedValues);
+    const timeoutId = setTimeout(() => {
+      onChange(watchedValues);
+    }, 100); // 100ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [watchedValues, onChange]);
 
   return (

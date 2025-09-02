@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useSession } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 import DashboardNavbar from "@/components/ui/DashboardNavbar/DashboardNavbar";
 import DashboardSidebar from "@/components/ui/DashboardSidebar/DashboardSidebar";
-import PortfolioPreview from "@/components/ui/PortfolioPreview/PortfolioPreview";
 import IntroductionSectionEditor from "@/components/ui/SectionEditors/IntroductionSectionEditor";
 import ProjectsSectionEditor from "@/components/ui/SectionEditors/ProjectsSectionEditor";
 import ExperienceSectionEditor from "@/components/ui/SectionEditors/ExperienceSectionEditor";
@@ -15,15 +15,15 @@ import AchievementsSectionEditor from "@/components/ui/SectionEditors/Achievemen
 import InterestsSectionEditor from "@/components/ui/SectionEditors/InterestsSectionEditor";
 import SettingsSectionEditor from "@/components/ui/SectionEditors/SettingsSectionEditor";
 import ResizablePanel from "@/components/ui/ResizablePanel/ResizablePanel";
+import Button from "@/components/ui/Button/Button";
 import { useResizable } from "@/hooks/useResizable";
+import { ArrowRight, Eye } from "lucide-react";
 import type { PortfolioData } from "@/types/portfolio";
 
 const DashboardPage = () => {
   const { data: session } = useSession();
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState("introduction");
-  const [previewMode, setPreviewMode] = useState<
-    "desktop" | "tablet" | "mobile"
-  >("desktop");
   const [isSaving, setIsSaving] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -32,12 +32,6 @@ const DashboardPage = () => {
     initialWidth: 320,
     minWidth: 280,
     maxWidth: 500,
-  });
-
-  const contentResizable = useResizable({
-    initialWidth: 600,
-    minWidth: 400,
-    maxWidth: 1000,
   });
 
   // Get actual sidebar width based on collapse state
@@ -49,6 +43,33 @@ const DashboardPage = () => {
   const handleSidebarMouseDown = (e: React.MouseEvent) => {
     if (!sidebarCollapsed) {
       sidebarResizable.handleMouseDown(e);
+    }
+  };
+
+  // Navigation functions
+  const handlePreview = () => {
+    // Save current data to localStorage before navigating
+    localStorage.setItem("portfolioData", JSON.stringify(portfolioData));
+    router.push("/preview");
+  };
+
+  const handleOpenFullWindowPreview = () => {
+    // Save current data and open in new window
+    localStorage.setItem("portfolioData", JSON.stringify(portfolioData));
+    window.open("/preview?fullscreen=true", "_blank");
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      // Save to localStorage
+      localStorage.setItem("portfolioData", JSON.stringify(portfolioData));
+      // TODO: Also save to database/API
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    } catch (error) {
+      console.error("Error saving portfolio:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -96,6 +117,28 @@ const DashboardPage = () => {
   });
 
   const [completedSections, setCompletedSections] = useState<string[]>([]);
+
+  // Load portfolio data from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedData = localStorage.getItem("portfolioData");
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setPortfolioData(parsedData);
+      }
+    } catch (error) {
+      console.error("Error loading portfolio data:", error);
+    }
+  }, []);
+
+  // Save portfolio data to localStorage whenever it changes (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem("portfolioData", JSON.stringify(portfolioData));
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [portfolioData]);
 
   // Update completed sections
   useEffect(() => {
@@ -163,7 +206,16 @@ const DashboardPage = () => {
   );
 
   const handleProjectsChange = useCallback(
-    (newData: { projects?: any[] }) => {
+    (newData: { projects: Array<{
+      name: string;
+      description: string;
+      technologies: string[];
+      id?: string;
+      image?: string;
+      link?: string;
+      startDate?: string;
+      endDate?: string;
+    }> }) => {
       // Extract projects array from the form data structure
       const projectsData = newData?.projects || [];
       handleSectionDataChange("projects", projectsData);
@@ -172,7 +224,7 @@ const DashboardPage = () => {
   );
 
   const handleExperienceChange = useCallback(
-    (newData: { experience?: any[] }) => {
+    (newData: { experience?: Array<unknown> }) => {
       // Extract experience array from the form data structure
       const experienceData = newData?.experience || [];
       handleSectionDataChange("experience", experienceData);
@@ -181,7 +233,7 @@ const DashboardPage = () => {
   );
 
   const handleSkillsChange = useCallback(
-    (newData: { skills?: any[] }) => {
+    (newData: { skills?: Array<unknown> }) => {
       // Extract skills array from the form data structure
       const skillsData = newData?.skills || [];
       handleSectionDataChange("skills", skillsData);
@@ -190,7 +242,7 @@ const DashboardPage = () => {
   );
 
   const handleEducationChange = useCallback(
-    (newData: { education?: any[] }) => {
+    (newData: { education?: Array<unknown> }) => {
       // Extract education array from the form data structure
       const educationData = newData?.education || [];
       handleSectionDataChange("education", educationData);
@@ -206,8 +258,8 @@ const DashboardPage = () => {
   );
 
   const handleAchievementsChange = useCallback(
-    (newData: { achievements?: any[] }) => {
-      // Extract achievements array from the form data structure  
+    (newData: { achievements?: Array<unknown> }) => {
+      // Extract achievements array from the form data structure
       const achievementsData = newData?.achievements || [];
       handleSectionDataChange("achievements", achievementsData);
     },
@@ -215,7 +267,7 @@ const DashboardPage = () => {
   );
 
   const handleInterestsChange = useCallback(
-    (newData: { interests?: any[] }) => {
+    (newData: { interests?: Array<unknown> }) => {
       // Extract interests array from the form data structure
       const interestsData = newData?.interests || [];
       handleSectionDataChange("interests", interestsData);
@@ -230,49 +282,28 @@ const DashboardPage = () => {
     [handleSectionDataChange]
   );
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    // TODO: Implement save to database
-    setTimeout(() => {
-      setIsSaving(false);
-      console.log("Portfolio saved:", portfolioData);
-    }, 1000);
-  };
-
-  const handlePreview = () => {
-    // TODO: Open preview in new window
-    console.log("Opening preview...");
-  };
-
-  const handleOpenFullWindowPreview = () => {
-    // Encode portfolio data to pass as URL parameter
-    const encodedData = encodeURIComponent(JSON.stringify(portfolioData));
-    const previewUrl = `/preview?data=${encodedData}`;
-
-    // Open preview in a new window
-    window.open(
-      previewUrl,
-      "_blank",
-      "width=1200,height=800,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no"
-    );
-  };
-
-  const handlePublish = () => {
-    // TODO: Implement publish functionality
-    console.log("Publishing portfolio...");
-  };
+  // Memoize the introduction data to prevent unnecessary re-renders
+  const introductionData = React.useMemo(
+    () => ({
+      name: portfolioData.introduction?.name || "",
+      title: portfolioData.introduction?.title || "",
+      bio: portfolioData.introduction?.bio || "",
+      avatar: portfolioData.introduction?.avatar || "",
+    }),
+    [
+      portfolioData.introduction?.name,
+      portfolioData.introduction?.title,
+      portfolioData.introduction?.bio,
+      portfolioData.introduction?.avatar,
+    ]
+  );
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case "introduction":
         return (
           <IntroductionSectionEditor
-            data={{
-              name: portfolioData.introduction?.name || "",
-              title: portfolioData.introduction?.title || "",
-              bio: portfolioData.introduction?.bio || "",
-              avatar: portfolioData.introduction?.avatar || "",
-            }}
+            data={introductionData}
             onChange={handleIntroductionChange}
           />
         );
@@ -425,25 +456,30 @@ const DashboardPage = () => {
           />
         </ResizablePanel>
 
-        {/* Resizable Content Area */}
-        <ResizablePanel
-          width={contentResizable.width}
-          onMouseDown={contentResizable.handleMouseDown}
-          isResizing={contentResizable.isResizing}
-          className="overflow-y-auto bg-gray-900/50"
-        >
+        {/* Main Content Area - Now takes full remaining space */}
+        <div className="flex-1 overflow-y-auto bg-gray-900/50 relative">
           {renderActiveSection()}
-        </ResizablePanel>
-
-        {/* Preview Area - Takes remaining space */}
-        <div className="flex-1 border-l border-white/10">
-          <PortfolioPreview
-            portfolioData={portfolioData}
-            previewMode={previewMode}
-            onPreviewModeChange={setPreviewMode}
-            onPublish={handlePublish}
-            onOpenFullWindow={handleOpenFullWindowPreview}
-          />
+          
+          {/* Floating Preview Button */}
+          <div className="fixed bottom-6 right-6 z-50 flex items-center space-x-3">
+            <Button
+              variant="secondary"
+              onClick={handleOpenFullWindowPreview}
+              className="bg-gray-800/80 backdrop-blur-md text-white/70 hover:text-white hover:bg-gray-700/80 border border-white/10"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Quick Preview
+            </Button>
+            
+            <Button
+              variant="primary"
+              onClick={handlePreview}
+              className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+            >
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Preview Portfolio
+            </Button>
+          </div>
         </div>
       </div>
     </div>

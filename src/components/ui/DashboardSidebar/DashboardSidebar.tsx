@@ -224,8 +224,12 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 <div className="flex justify-between text-sm">
                   <span className="text-white/80">Progress</span>
                   <span className="text-white/80">
-                    {completedSections.length}/{sections.length - 1}{" "}
-                    {/* Exclude settings */}
+                    {
+                      completedSections.filter(
+                        (section) => section !== "settings"
+                      ).length
+                    }
+                    /{sections.length - 1} {/* Exclude settings */}
                   </span>
                 </div>
               </div>
@@ -234,16 +238,26 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                   className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
                   style={{
                     width: `${
-                      (completedSections.length / (sections.length - 1)) * 100
+                      (completedSections.filter(
+                        (section) => section !== "settings"
+                      ).length /
+                        (sections.length - 1)) *
+                      100
                     }%`,
                   }}
                 />
               </div>
               <div className="text-xs text-white/60 mt-2">
-                {completedSections.length === sections.length - 1
+                {completedSections.filter((section) => section !== "settings")
+                  .length ===
+                sections.length - 1
                   ? "🎉 Portfolio complete!"
                   : `${
-                      sections.length - 1 - completedSections.length
+                      sections.length -
+                      1 -
+                      completedSections.filter(
+                        (section) => section !== "settings"
+                      ).length
                     } sections remaining`}
               </div>
             </Card>

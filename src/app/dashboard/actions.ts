@@ -6,7 +6,7 @@ import { z } from "zod";
 import {
   introductionSchema,
   projectSchema,
-  experienceSchema,
+  experienceItemSchema,
   skillsSchema,
   educationSchema,
   contactSchema,
@@ -129,15 +129,14 @@ export async function saveExperienceAction(data: ExperienceFormData[]) {
     const user = await validateUser();
 
     // Validate data
-    const validatedData = z.array(experienceSchema).parse(data);
+    const validatedData = z.array(experienceItemSchema).parse(data);
 
     // Sanitize content
     const sanitizedData = validatedData.map((exp) => ({
       ...exp,
-      company: sanitizeHtml(exp.company),
-      position: sanitizeHtml(exp.position),
-      duration: sanitizeHtml(exp.duration),
-      description: sanitizeHtml(exp.description),
+      company: exp.company ? sanitizeHtml(exp.company) : "",
+      position: exp.position ? sanitizeHtml(exp.position) : "",
+      description: exp.description ? sanitizeHtml(exp.description) : "",
     }));
 
     return { success: true, data: sanitizedData };
@@ -182,7 +181,7 @@ export async function saveEducationAction(data: EducationFormData[]) {
       ...edu,
       institution: sanitizeHtml(edu.institution),
       degree: sanitizeHtml(edu.degree),
-      field: sanitizeHtml(edu.field),
+      fieldOfStudy: sanitizeHtml(edu.fieldOfStudy),
       startDate: sanitizeHtml(edu.startDate),
       endDate: edu.endDate ? sanitizeHtml(edu.endDate) : undefined,
     }));

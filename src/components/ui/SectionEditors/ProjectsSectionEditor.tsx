@@ -3,7 +3,16 @@
 import React from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X, FolderOpen, Link, Eye, Code, Calendar } from "lucide-react";
+import {
+  Plus,
+  X,
+  FolderOpen,
+  Link,
+  Eye,
+  Code,
+  Calendar,
+  ImageIcon,
+} from "lucide-react";
 import Card from "@/components/ui/Card/Card";
 
 // Create a projects schema for the section
@@ -157,7 +166,7 @@ const ProjectsSectionEditor: React.FC<ProjectsSectionProps> = ({
             </div>
 
             <div className="space-y-4">
-              {/* Project Name & Description */}
+              {/* Project Name & Link */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">
@@ -193,6 +202,29 @@ const ProjectsSectionEditor: React.FC<ProjectsSectionProps> = ({
                     </p>
                   )}
                 </div>
+              </div>
+
+              {/* Project Image */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  <ImageIcon className="w-4 h-4 inline mr-1" />
+                  Project Image
+                  <span className="text-white/50 text-xs ml-1">(Optional)</span>
+                </label>
+                <input
+                  {...register(`projects.${index}.image`)}
+                  type="url"
+                  className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:bg-white/10 transition-all"
+                  placeholder="https://example.com/project-screenshot.jpg"
+                />
+                {errors.projects?.[index]?.image && (
+                  <p className="text-red-400 text-xs mt-1">
+                    {errors.projects[index]?.image?.message}
+                  </p>
+                )}
+                <p className="text-xs text-white/50 mt-1">
+                  Add a screenshot, demo image, or logo for your project
+                </p>
               </div>
 
               <div>
@@ -316,6 +348,21 @@ const ProjectsSectionEditor: React.FC<ProjectsSectionProps> = ({
                     </span>
                   </div>
                   <div className="text-white/80">
+                    {watchedValues.projects[index]?.image && (
+                      <div className="mb-3 rounded-lg overflow-hidden">
+                        <img
+                          src={watchedValues.projects[index].image}
+                          alt={
+                            watchedValues.projects[index]?.name ||
+                            "Project preview"
+                          }
+                          className="w-full h-32 object-cover rounded-lg"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
                     {watchedValues.projects[index]?.name && (
                       <h4 className="font-semibold text-white mb-1">
                         {watchedValues.projects[index].name}
