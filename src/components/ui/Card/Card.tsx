@@ -1,13 +1,7 @@
 "use client";
 
 import React from "react";
-
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
-  variant?: "glass" | "solid" | "gradient";
-  hover?: boolean;
-}
+import { CardProps } from "@/types";
 
 const Card: React.FC<CardProps> = ({
   children,

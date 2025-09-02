@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/ui/Navbar/Navbar";
-import Footer from "@/components/ui/Footer/Footer";
-import Aurora from "@/components/Aurora/Aurora";
+import ClientLayout from "./ClientLayout";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -32,22 +30,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} antialiased bg-background text-foreground font-sans`}
       >
-        {/* Aurora Background */}
-        <div className="fixed inset-0 z-0">
-          <Aurora
-            colorStops={["#8B5CF6", "#A855F7", "#C084FC"]}
-            blend={0.5}
-            amplitude={1.0}
-            speed={1.0}
-          />
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10">
-          <Navbar />
-          {children}
-          <Footer />
-        </div>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

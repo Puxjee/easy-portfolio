@@ -23,12 +23,7 @@ import Button from "@/components/ui/Button/Button";
 import Card from "@/components/ui/Card/Card";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-
-interface AuthFormProps {
-  isLogin: boolean;
-  onToggleMode: () => void;
-  onSubmit: (data: LoginFormData | RegisterFormData) => void;
-}
+import { AuthFormProps } from "@/types";
 
 const AuthForm: React.FC<AuthFormProps> = ({
   isLogin,
